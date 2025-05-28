@@ -1,0 +1,451 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    background-color: #f0f2f5;
+    color: #333;
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #fff;
+    box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    border-radius: 8px;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #e9ecef;
+}
+
+header h1 {
+    color: #007bff;
+    margin: 0;
+}
+
+h2 {
+    color: #343a40;
+    margin-top: 30px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #dee2e6;
+    padding-bottom: 10px;
+}
+
+h3 {
+    color: #495057;
+    margin-top: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px; /* Espaço entre o ícone e o texto */
+}
+
+.icon {
+    width: 24px; /* Tamanho ajustado para h3 */
+    height: 24px;
+    vertical-align: middle;
+}
+
+/* Controle de Veículos */
+.veiculos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.veiculo-card {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    padding: 20px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    transition: transform 0.2s ease-in-out;
+}
+
+.veiculo-card:hover {
+    transform: translateY(-5px);
+}
+
+.status-veiculo p {
+    margin: 8px 0;
+    font-size: 0.95em;
+}
+
+.status-veiculo span {
+    font-weight: bold;
+    color: #007bff;
+}
+
+#status-motor-normal, #status-motor-esportivo, #status-motor-caminhao { /* IDs ainda serão usados */
+    color: red; /* Default para desligado */
+}
+
+
+.botoes-acao {
+    margin-top: 15px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.botoes-acao button {
+    flex-grow: 1; /* Faz os botões ocuparem espaço similar */
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: background-color 0.2s ease;
+    min-width: 100px; /* Largura mínima para não ficarem muito pequenos */
+}
+
+.btn-ligar { background-color: #28a745; color: white; }
+.btn-ligar:hover { background-color: #218838; }
+
+.btn-acelerar { background-color: #17a2b8; color: white; }
+.btn-acelerar:hover { background-color: #138496; }
+
+.btn-frear { background-color: #ffc107; color: #212529; }
+.btn-frear:hover { background-color: #e0a800; }
+
+.btn-buzinar { background-color: #6c757d; color: white; }
+.btn-buzinar:hover { background-color: #5a6268; }
+
+/* Manutenção e Modificações */
+#manutencao-modificacoes {
+    margin-top: 40px;
+}
+
+.selecao-veiculo-manutencao {
+    margin-bottom: 20px;
+}
+
+.selecao-veiculo-manutencao label {
+    font-weight: bold;
+    margin-right: 10px;
+}
+
+#veiculo-select {
+    padding: 8px 12px;
+    border-radius: 4px;
+    border: 1px solid #ced4da;
+    font-size: 1em;
+}
+
+.area-modificacoes {
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 6px;
+    border: 1px solid #e0e0e0;
+}
+
+.mod-section h4 {
+    color: #007bff;
+    margin-top: 0;
+    margin-bottom: 15px;
+}
+
+.mod-section fieldset {
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.mod-section legend {
+    font-weight: bold;
+    color: #495057;
+    padding: 0 5px;
+}
+
+.mod-section label {
+    display: inline-block;
+    min-width: 180px; /* Alinha os campos */
+    margin-bottom: 8px;
+    font-size: 0.9em;
+}
+
+.mod-section input[type="text"],
+.mod-section input[type="number"],
+.mod-section input[type="date"],
+.mod-section input[type="color"],
+.mod-section select {
+    padding: 8px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    min-width: 200px;
+}
+.mod-section input[type="checkbox"] {
+    margin-left: 5px;
+    vertical-align: middle;
+}
+
+
+.btn-salvar {
+    background-color: #007bff;
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background-color 0.2s ease;
+    display: block;
+    margin-top: 10px;
+}
+
+.btn-salvar:hover {
+    background-color: #0056b3;
+}
+
+footer {
+    text-align: center;
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid #e9ecef;
+    font-size: 0.9em;
+    color: #6c757d;
+}
+footer a {
+    color: #007bff;
+    text-decoration: none;
+}
+footer a:hover {
+    text-decoration: underline;
+}
+
+/* Responsividade básica */
+@media (max-width: 768px) {
+    .veiculos-grid {
+        grid-template-columns: 1fr; /* Empilha os cards em telas menores */
+    }
+    .botoes-acao {
+        flex-direction: column; /* Empilha os botões de ação */
+    }
+    .mod-section label {
+        display: block; /* Faz os labels ocuparem a linha toda */
+        min-width: auto;
+    }
+    .mod-section input[type="text"],
+    .mod-section input[type="number"],
+    .mod-section input[type="date"],
+    .mod-section input[type="color"],
+    .mod-section select {
+        width: calc(100% - 20px); /* Ocupa a largura disponível */
+    }
+}
+
+/* ... (CSS existente) ... */
+
+/* Previsão do Tempo */
+#previsao-tempo {
+    margin-top: 40px;
+    padding: 20px;
+    background-color: #e9f5ff; /* Um azul claro para diferenciar */
+    border-radius: 6px;
+    border: 1px solid #bde0fe;
+}
+
+#previsao-tempo h2 {
+    color: #005c99;
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.weather-controls {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 25px;
+}
+
+#cidade-input {
+    padding: 10px 15px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 1em;
+    width: 300px;
+    max-width: 70%;
+}
+
+#buscar-tempo-btn {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background-color 0.2s ease;
+}
+
+#buscar-tempo-btn:hover {
+    background-color: #0056b3;
+}
+
+.forecast-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.forecast-day {
+    background-color: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    padding: 15px;
+    text-align: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.forecast-day h4 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    color: #343a40;
+    font-size: 1.1em;
+}
+
+.forecast-day img {
+    width: 60px;
+    height: 60px;
+    margin-bottom: 5px;
+}
+
+.forecast-day p {
+    margin: 5px 0;
+    font-size: 0.95em;
+}
+
+.forecast-day .temp {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #007bff;
+}
+
+/* ... (CSS existente) ... */
+
+/* Previsão do Tempo (seção original) */
+#previsao-tempo {
+    margin-top: 40px;
+    padding: 20px;
+    background-color: #e9f5ff; /* Um azul claro para diferenciar */
+    border-radius: 6px;
+    border: 1px solid #bde0fe;
+}
+
+#previsao-tempo h2 { /* Mantendo o estilo do h2 específico se necessário */
+    color: #005c99;
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+/* Consulta Rápida de Tempo (nova seção) */
+#consulta-rapida-tempo {
+    margin-top: 40px;
+    padding: 20px;
+    background-color: #e9f5ff; /* Mesmo fundo da seção de previsão */
+    border-radius: 6px;
+    border: 1px solid #bde0fe;
+}
+
+#consulta-rapida-tempo h2 {
+    color: #005c99; /* Mesmo estilo de título */
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+/* Estilo para o card do tempo atual (se for diferente da grade de previsão) */
+#weather-current-container {
+    max-width: 400px; /* Limita a largura para um card único */
+    margin: 20px auto; /* Centraliza */
+    background-color: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+#weather-current-container.empty { /* Para quando não há dados */
+    padding: 0;
+    border: none;
+    box-shadow: none;
+    background-color: transparent;
+}
+
+#weather-current-container h4 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: #343a40;
+    font-size: 1.4em;
+}
+
+#weather-current-container img {
+    width: 80px; /* Ícone um pouco maior para tempo atual */
+    height: 80px;
+    margin-bottom: 10px;
+}
+
+#weather-current-container p {
+    margin: 8px 0;
+    font-size: 1em;
+}
+
+#weather-current-container .temp {
+    font-size: 2em; /* Temperatura em destaque */
+    font-weight: bold;
+    color: #007bff;
+    margin: 10px 0;
+}
+
+/* ... (CSS existente) ... */
+
+/* Estilos para o grupo de busca de cidade e sugestões */
+.city-search-group {
+    position: relative; /* Necessário para posicionar a lista de sugestões */
+}
+
+.suggestions-list {
+    display: none; /* Escondido por padrão */
+    position: absolute;
+    border: 1px solid #ddd;
+    border-top: none;
+    z-index: 99;
+    top: 100%; /* Logo abaixo do input */
+    left: 0;
+    right: 0;
+    background-color: white;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.suggestions-list div {
+    padding: 10px;
+    cursor: pointer;
+    border-bottom: 1px solid #eee;
+}
+
+.suggestions-list div:last-child {
+    border-bottom: none;
+}
+
+.suggestions-list div:hover {
+    background-color: #f0f0f0;
+}
+
+.suggestions-list .no-suggestion {
+    padding: 10px;
+    color: #777;
+    cursor: default;
+}
+
+/* Se você tornou os campos de estado/país readonly, pode querer um estilo visual */
+input[readonly] {
+    background-color: #e9ecef;
+    cursor: not-allowed;
+}

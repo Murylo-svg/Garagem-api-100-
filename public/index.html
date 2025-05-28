@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Garagem Inteligente</title>
+    <link rel="stylesheet" href="CSS/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Minha Garagem Inteligente</h1>
+        </header>
+
+        <section id="controle-veiculos">
+            <h2>Controle dos Veículos</h2>
+            <div class="veiculos-grid">
+                <!-- Placeholders para os veículos -->
+                <div id="placeholder-carro-normal"><img src="IMAGEM/carro-completo.jpeg" alt="#"></div>
+                <div id="placeholder-carro-esportivo"><img src="IMAGEM/2_Lamborghini-Huracán-Performante_div.webp" alt="#"></div>
+                <div id="placeholder-caminhao"><img src="IMAGEM/Tipos-de-caminhao.webp" alt="#"></div>
+            </div>
+        </section>
+
+        <section id="manutencao-modificacoes">
+            <h2>Manutenção e Modificações</h2>
+            <div class="selecao-veiculo-manutencao">
+                <label for="veiculo-select">Selecione o Veículo:</label>
+                <select id="veiculo-select">
+                    <option value="carro-normal-manutencao">Carro Normal</option>
+                    <option value="carro-esportivo-manutencao">Carro Esportivo</option>
+                    <option value="caminhao-manutencao">Caminhão</option>
+                </select>
+            </div>
+
+            <div class="area-modificacoes">
+                <!-- As seções de modificação permanecem aqui, poderiam ser externalizadas também -->
+                <div class="mod-section" id="carro-normal-manutencao-content">
+                    <h4>Modificações - Carro Normal</h4>
+                    <form>
+                        <fieldset>
+                            <legend>Motor e Performance</legend>
+                            <label for="oleo-normal">Troca de Óleo:</label>
+                            <input type="date" id="oleo-normal" name="oleo-normal"><br>
+                            <label for="filtro-ar-normal">Filtro de Ar:</label>
+                            <select id="filtro-ar-normal" name="filtro-ar-normal">
+                                <option value="padrao">Padrão</option>
+                                <option value="esportivo">Esportivo</option>
+                            </select><br>
+                            <label for="chip-potencia-normal">Chip de Potência (CV):</label>
+                            <input type="number" id="chip-potencia-normal" name="chip-potencia-normal" min="0" max="50" step="5" value="0"><br>
+                        </fieldset>
+
+                        <fieldset>
+                            <legend>Estética e Conforto</legend>
+                            <label for="cor-normal">Pintura (Cor):</label>
+                            <input type="color" id="cor-normal" name="cor-normal" value="#ffffff"><br>
+                            <label for="rodas-normal">Rodas (Aro):</label>
+                            <input type="number" id="rodas-normal" name="rodas-normal" min="13" max="18" value="15"><br>
+                            <label for="som-normal">Sistema de Som:</label>
+                            <input type="text" id="som-normal" name="som-normal" placeholder="Ex: Pioneer X200"><br>
+                        </fieldset>
+                        <button type="submit" class="btn-salvar">Salvar Modificações (Carro Normal)</button>
+                    </form>
+                </div>
+
+                <div class="mod-section" id="carro-esportivo-manutencao-content" style="display:none;">
+                    <h4>Modificações - Carro Esportivo</h4>
+                    <form>
+                        <fieldset>
+                            <legend>Motor e Performance Avançada</legend>
+                            <label for="turbo-esportivo">Kit Turbo:</label>
+                            <select id="turbo-esportivo" name="turbo-esportivo">
+                                <option value="nao">Não</option>
+                                <option value="stage1">Stage 1</option>
+                                <option value="stage2">Stage 2</option>
+                                <option value="stage3">Stage 3</option>
+                            </select><br>
+                            <label for="suspensao-esportivo">Suspensão:</label>
+                            <select id="suspensao-esportivo" name="suspensao-esportivo">
+                                <option value="original">Original</option>
+                                <option value="esportiva">Esportiva Fixa</option>
+                                <option value="rosca">Regulável (Rosca)</option>
+                                <option value="ar">A Ar</option>
+                            </select><br>
+                            <label for="freios-esportivo">Freios:</label>
+                            <input type="text" id="freios-esportivo" name="freios-esportivo" placeholder="Ex: Brembo Carbono-Cerâmica"><br>
+                        </fieldset>
+                        <fieldset>
+                            <legend>Aerodinâmica e Estilo</legend>
+                            <label for="aerofolio-esportivo">Aerofólio:</label>
+                            <select id="aerofolio-esportivo" name="aerofolio-esportivo">
+                                <option value="nao">Não</option>
+                                <option value="fibra-carbono">Fibra de Carbono</option>
+                                <option value="aluminio">Alumínio</option>
+                            </select><br>
+                             <label for="cor-esportivo">Pintura (Cor Especial):</label>
+                            <input type="color" id="cor-esportivo" name="cor-esportivo" value="#ff0000"><br>
+                        </fieldset>
+                        <button type="submit" class="btn-salvar">Salvar Modificações (Carro Esportivo)</button>
+                    </form>
+                </div>
+                
+                <div class="mod-section" id="caminhao-manutencao-content" style="display:none;">
+                    <h4>Modificações - Caminhão</h4>
+                    <form>
+                        <fieldset>
+                            <legend>Motor e Capacidade</legend>
+                            <label for="revisao-motor-caminhao">Revisão Completa Motor:</label>
+                            <input type="checkbox" id="revisao-motor-caminhao" name="revisao-motor-caminhao"><br>
+                            <label for="torque-caminhao">Ajuste de Torque (Nm):</label>
+                            <input type="number" id="torque-caminhao" name="torque-caminhao" min="800" max="3000" step="50" value="1200"><br>
+                            <label for="pneus-caminhao">Tipo de Pneus:</label>
+                            <select id="pneus-caminhao" name="pneus-caminhao">
+                                <option value="rodoviario">Rodoviário</option>
+                                <option value="offroad">Off-road</option>
+                                <option value="misto">Misto</option>
+                            </select><br>
+                        </fieldset>
+                        <fieldset>
+                            <legend>Cabine e Acessórios</legend>
+                            <label for="climatizador-caminhao">Climatizador:</label>
+                            <input type="checkbox" id="climatizador-caminhao" name="climatizador-caminhao" checked><br>
+                            <label for="cama-caminhao">Tipo de Cama:</label>
+                            <input type="text" id="cama-caminhao" name="cama-caminhao" placeholder="Ex: Cama Gaúcha King"><br>
+                            <label for="radio-px-caminhao">Rádio PX:</label>
+                            <input type="checkbox" id="radio-px-caminhao" name="radio-px-caminhao" checked><br>
+                        </fieldset>
+                        <button type="submit" class="btn-salvar">Salvar Modificações (Caminhão)</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </div>
+        <!-- ... (seção de manutenção e modificações) ... -->
+
+        <section id="previsao-tempo">
+            <h2>Previsão do Tempo para Viagem (5 Dias)</h2>
+            <div class="weather-controls">
+                <input type="text" id="cidade-input" placeholder="Digite o nome da cidade">
+                <button id="buscar-tempo-btn">Buscar Previsão</button>
+            </div>
+            <div id="weather-forecast-container" class="forecast-grid">
+                <!-- Previsões serão inseridas aqui pelo JavaScript -->
+            </div>
+            <p id="weather-error" style="color: red; text-align: center;"></p>
+        </section>
+
+        <footer>
+            <!-- ... (conteúdo do footer) ... -->
+        </footer>
+    </div>
+
+    <script src="js/main.js"></script> <!-- Já existente -->
+    <!-- Poderíamos criar um js/weather.js, mas por simplicidade vamos adicionar ao main.js -->
+    <footer>
+        <p>© 2023 Garagem Inteligente. Imagens por <a href="https://icons8.com" target="_blank">Icons8</a>.</p>
+    </footer>
+</body>
+</html>
