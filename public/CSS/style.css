@@ -56,6 +56,10 @@ h3 {
     gap: 20px;
 }
 
+.veiculos-grid img{
+    max-width: 300px;
+}
+
 .veiculo-card {
     background-color: #f8f9fa;
     border: 1px solid #ced4da;
