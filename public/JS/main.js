@@ -161,7 +161,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!listaProdutosDiv) return; // Se o elemento não existe, sai da função
 
         try {
-            const response = await fetch('http://localhost:3001/api/produtos');
+            const response = await fetch('https://garagem-api-100.onrender.com/api/produtos');
             if (!response.ok) throw new Error('Falha na resposta da rede.');
             
             const produtos = await response.json();
