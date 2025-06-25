@@ -232,3 +232,34 @@ document.addEventListener('DOMContentLoaded', function() {
     carregarUsuarios(); // <<< CHAMADA DA NOVA FUNÇÃO
 
 });
+// Aguarda o HTML carregar completamente antes de rodar o script
+document.addEventListener('DOMContentLoaded', () => {
+
+    // ======================================================= //
+    // ============     LÓGICA DO MENU SANDUÍCHE    ============ //
+    // ======================================================= //
+    const menuIcon = document.getElementById('menu-icon');
+    const menuDropdown = document.getElementById('menu-dropdown');
+
+    // Verifica se os elementos existem na página para evitar erros
+    if (menuIcon && menuDropdown) {
+        menuIcon.addEventListener('click', () => {
+            // Adiciona/remove a classe 'active' para ativar as animações do CSS
+            menuIcon.classList.toggle('active');
+            menuDropdown.classList.toggle('active');
+        });
+
+        // Opcional: fechar o menu se clicar fora dele
+        document.addEventListener('click', (event) => {
+            if (!menuIcon.contains(event.target) && !menuDropdown.contains(event.target)) {
+                menuIcon.classList.remove('active');
+                menuDropdown.classList.remove('active');
+            }
+        });
+    }
+
+    //
+    // SEU CÓDIGO JAVASCRIPT EXISTENTE COMEÇA ABAIXO...
+    //
+
+});

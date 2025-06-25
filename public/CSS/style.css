@@ -491,3 +491,89 @@ input[readonly] {
     font-size: 0.9em;
     color: #666;
 }
+/* ======================================================= */
+/* ============   ESTILOS DO MENU SANDUÍCHE   ============ */
+/* ======================================================= */
+
+.menu-container {
+    position: fixed; /* Fixo na tela, mesmo com scroll */
+    top: 20px;
+    right: 20px;
+    z-index: 1000; /* Garante que fique acima de outros elementos */
+}
+
+.menu-icon {
+    width: 40px;
+    height: 30px;
+    position: relative;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.menu-icon span {
+    display: block;
+    width: 100%;
+    height: 4px;
+    background-color: #007bff; /* Cor azul do seu tema */
+    border-radius: 2px;
+    transition: all 0.3s ease-in-out;
+}
+
+/* Animação do ícone para virar um "X" */
+.menu-icon.active span:nth-child(1) {
+    transform: translateY(13px) rotate(45deg);
+}
+
+.menu-icon.active span:nth-child(2) {
+    opacity: 0;
+}
+
+.menu-icon.active span:nth-child(3) {
+    transform: translateY(-13px) rotate(-45deg);
+}
+
+/* Estilo do Menu Dropdown */
+.menu-dropdown {
+    position: absolute;
+    top: 50px; /* Posição abaixo do ícone */
+    right: 0;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    overflow: hidden;
+    /* Começa escondido e fora da tela */
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.3s ease-in-out;
+}
+
+.menu-dropdown.active {
+    /* Fica visível e na posição correta */
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.menu-dropdown ul {
+    list-style: none;
+    padding: 10px 0;
+    margin: 0;
+}
+
+.menu-dropdown li a {
+    display: block;
+    padding: 12px 25px;
+    color: #333;
+    text-decoration: none;
+    font-size: 1rem;
+    white-space: nowrap; /* Evita que o texto quebre linha */
+    transition: background-color 0.2s ease;
+}
+
+.menu-dropdown li a:hover {
+    background-color: #f0f2f5; /* Cor de fundo do body */
+    color: #007bff; /* Cor primária */
+}

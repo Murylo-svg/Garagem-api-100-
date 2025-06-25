@@ -4,9 +4,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Garagem Inteligente</title>
+    <!-- O caminho para seu CSS deve estar correto -->
     <link rel="stylesheet" href="CSS/style.css">
 </head>
 <body>
+
+    <!-- ======================================================= -->
+    <!-- ============   MENU SANDUÍCHE ADICIONADO   ============ -->
+    <!-- ======================================================= -->
+    <div class="menu-container">
+        <div class="menu-icon" id="menu-icon">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <nav class="menu-dropdown" id="menu-dropdown">
+            <ul>
+                <li><a href="../login/login.html">Logar</a></li>
+                <li><a href="../login/cadastro.html">Criar Conta</a></li>
+            </ul>
+        </nav>
+    </div>
+
+
     <div class="container">
         <header>
             <h1>Garagem do Homem-Aranha</h1>
@@ -144,10 +164,6 @@
             <p id="weather-error" style="color: red; text-align: center;"></p>
         </section>
 
-        <!-- ======================================================= -->
-        <!-- ============   SEÇÕES NOVAS ADICIONADAS   ============= -->
-        <!-- ======================================================= -->
-
         <section id="inventario">
             <h2>Peças e Acessórios Disponíveis</h2>
             <div id="produtos-lista" class="lista-itens">
@@ -165,14 +181,13 @@
         </section>
 
 
-    </div> <!-- Fechamento do .container principal -->
-    
-    <!-- O footer deve estar dentro do container ou fora, dependendo do seu layout. Vou manter fora como no original. -->
+    </div>
+
     <footer>
         <p>© 2024 Garagem Inteligente. Novas seções adicionadas!</p>
     </footer>
 
-    <!-- No seu HTML, o script está em js/main.js, então vamos usar esse caminho -->
+    <!-- O caminho para seu JS deve estar correto -->
     <script src="JS/main.js"></script> 
 </body>
 </html>
