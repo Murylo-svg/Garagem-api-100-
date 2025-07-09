@@ -1,9 +1,4 @@
-// Usaremos um único DOMContentLoaded para organizar todo o código de inicialização.
 document.addEventListener('DOMContentLoaded', function() {
-
-    // =========================================================================
-    // --- SEÇÃO 1: CARREGAMENTO DINÂMICO DE COMPONENTES (VEÍCULOS) ---
-    // =========================================================================
 
     async function loadHTML(filePath, placeholderElement) {
         try {
@@ -54,10 +49,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // =========================================================================
-    // --- SEÇÃO 2: LÓGICA DE MANUTENÇÃO E MODIFICAÇÕES (ABAS) ---
-    // =========================================================================
-
     const veiculoSelect = document.getElementById('veiculo-select');
     const modSections = document.querySelectorAll('.mod-section');
 
@@ -74,10 +65,6 @@ document.addEventListener('DOMContentLoaded', function() {
              veiculoSelect.dispatchEvent(new Event('change'));
         }
     }
-
-    // =========================================================================
-    // --- SEÇÃO 3: LÓGICA DA PREVISÃO DO TEMPO (5 DIAS) ---
-    // =========================================================================
 
     const cidadeInput = document.getElementById('cidade-input');
     const buscarTempoBtn = document.getElementById('buscar-tempo-btn');
@@ -103,7 +90,6 @@ document.addEventListener('DOMContentLoaded', function() {
         forecastContainer.innerHTML = '<p style="text-align:center;">Buscando previsão...</p>';
         if (weatherErrorEl) weatherErrorEl.textContent = '';
 
-        // Requisição para o seu backend que já tem a chave da API
         const apiUrl = `http://localhost:3001/api/previsao/${cidade}`;
 
         try {
@@ -151,21 +137,16 @@ document.addEventListener('DOMContentLoaded', function() {
         if (weatherErrorEl) weatherErrorEl.textContent = message;
     }
 
-
-    // =========================================================================
-    // --- SEÇÃO 4: NOVAS FUNÇÕES PARA CARREGAR DADOS MOCKADOS ---
-    // =========================================================================
-
     async function carregarProdutos() {
         const listaProdutosDiv = document.getElementById('produtos-lista');
-        if (!listaProdutosDiv) return; // Se o elemento não existe, sai da função
+        if (!listaProdutosDiv) return;
 
         try {
             const response = await fetch('https://garagem-api-100.onrender.com/api/produtos');
             if (!response.ok) throw new Error('Falha na resposta da rede.');
             
             const produtos = await response.json();
-            listaProdutosDiv.innerHTML = ''; // Limpa a mensagem "Carregando..."
+            listaProdutosDiv.innerHTML = '';
 
             if (produtos.length === 0) {
                 listaProdutosDiv.innerHTML = '<p>Nenhum produto no inventário.</p>';
@@ -173,7 +154,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             produtos.forEach(produto => {
-                // Usando uma classe 'item-card' para estilização. Você pode adaptar no seu CSS.
                 const produtoHtml = `
                     <div class="item-card">
                         <h3>${produto.nome}</h3>
@@ -222,34 +202,23 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-
-    // =========================================================================
-    // --- PONTO DE PARTIDA: INICIALIZAÇÃO DE TODAS AS FUNÇÕES ---
-    // =========================================================================
-    
     loadVehicles();
-    carregarProdutos(); // <<< CHAMADA DA NOVA FUNÇÃO
-    carregarUsuarios(); // <<< CHAMADA DA NOVA FUNÇÃO
+    carregarProdutos();
+    carregarUsuarios();
 
 });
-// Aguarda o HTML carregar completamente antes de rodar o script
-document.addEventListener('DOMContentLoaded', () => {
 
-    // ======================================================= //
-    // ============     LÓGICA DO MENU SANDUÍCHE    ============ //
-    // ======================================================= //
+document.addEventListener('DOMContentLoaded', () => {
     const menuIcon = document.getElementById('menu-icon');
     const menuDropdown = document.getElementById('menu-dropdown');
 
-    // Verifica se os elementos existem na página para evitar erros
     if (menuIcon && menuDropdown) {
         menuIcon.addEventListener('click', () => {
-            // Adiciona/remove a classe 'active' para ativar as animações do CSS
+
             menuIcon.classList.toggle('active');
             menuDropdown.classList.toggle('active');
         });
 
-        // Opcional: fechar o menu se clicar fora dele
         document.addEventListener('click', (event) => {
             if (!menuIcon.contains(event.target) && !menuDropdown.contains(event.target)) {
                 menuIcon.classList.remove('active');
@@ -257,9 +226,4 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
-
-    //
-    // SEU CÓDIGO JAVASCRIPT EXISTENTE COMEÇA ABAIXO...
-    //
-
 });
