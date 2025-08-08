@@ -4,14 +4,7 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import axios from 'axios';
-import path from 'path';
-import { fileURLToPath } from 'url';
-// --- NOVO: Importações do MongoDB ---
-import { MongoClient, ObjectId } from 'mongodb'; // ObjectId é crucial para buscar por ID
-
-// __filename e __dirname em ESM
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import mysql from 'mysql2/promise'; // Driver do MySQL
 
 // Carrega variáveis de ambiente do arquivo .env
 dotenv.config();
@@ -20,12 +13,9 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 3001;
 const apiKey = process.env.OPENWEATHER_API_KEY;
-// --- NOVO: Pega a URI de conexão do MongoDB do arquivo .env ---
-const mongoUri = process.env.MONGO_URI;
 
-// --- NOVO: Variáveis para guardar a conexão com o banco e as coleções ---
-let db;
-let produtosCollection, usuariosCollection, pedidosCollection, chamadosCollection;
+// Middleware para parsear JSON no corpo das requisições (essencial para POST)
+app.use(express.json());
 
 // Middleware para CORS
 app.use((req, res, next) => {
@@ -34,158 +24,165 @@ app.use((req, res, next) => {
     next();
 });
 
-// Middleware para parsear JSON
-app.use(express.json());
+// --- 3. CONEXÃO COM O BANCO DE DADOS ---
+const pool = mysql.createPool({
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_DATABASE,
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0
+});
 
-// --- 3. FUNÇÃO PRINCIPAL PARA INICIAR O SERVIDOR ---
-async function startServer() {
-    if (!mongoUri) {
-        console.error('ERRO FATAL: A variável de ambiente MONGO_URI não está definida no arquivo .env');
-        process.exit(1); // Encerra o processo se não houver URI do banco
+// ----- ENDPOINTS DA API OPENWEATHERMAP (Extras, permanecem iguais) -----
+app.get('/api/previsao/:cidade', async (req, res) => {
+    const { cidade } = req.params;
+    if (!apiKey) {
+        return res.status(500).json({ message: 'Chave da API não configurada.' });
+    }
+    const url = `https://api.openweathermap.org/data/2.5/forecast?q=${cidade}&appid=${apiKey}&units=metric&lang=pt_br`;
+    try {
+        const response = await axios.get(url);
+        res.json(response.data);
+    } catch (error) {
+        res.status(500).json({ message: 'Erro ao buscar previsão do tempo.' });
+    }
+});
+
+
+// ----- ENDPOINTS DA APLICAÇÃO (USUÁRIOS E MANUTENÇÕES) -----
+
+// --- ROTAS DE USUÁRIOS ---
+
+// GET: Retornar todos os usuários (sem a senha)
+app.get('/api/usuarios', async (req, res) => {
+  try {
+    // Selecionamos todas as colunas, exceto a senha, por segurança.
+    const [rows] = await pool.query('SELECT id, nome, email, data_criacao FROM usuarios');
+    res.json(rows);
+  } catch (error) {
+    res.status(500).json({ mensagem: 'Erro ao buscar usuários.', error: error.message });
+  }
+});
+
+// POST: Criar um novo usuário (ex: registro)
+// NOTA: Em um app real, você usaria bcrypt para hashear a senha antes de salvar!
+app.post('/api/usuarios', async (req, res) => {
+    const { nome, email, senha } = req.body;
+    if (!nome || !email || !senha) {
+        return res.status(400).json({ mensagem: 'Nome, email e senha são obrigatórios.' });
+    }
+    try {
+        const sql = 'INSERT INTO usuarios (nome, email, senha) VALUES (?, ?, ?)';
+        // !! AVISO DE SEGURANÇA: Aqui estamos salvando a senha como texto puro.
+        // !! Em produção, use: const hash = await bcrypt.hash(senha, 10); e salve o hash.
+        const [result] = await pool.query(sql, [nome, email, senha]);
+        res.status(201).json({ id: result.insertId, nome, email });
+    } catch (error) {
+        // Código 'ER_DUP_ENTRY' é específico do MySQL para entradas duplicadas
+        if (error.code === 'ER_DUP_ENTRY') {
+            return res.status(409).json({ mensagem: 'Este email já está cadastrado.' });
+        }
+        res.status(500).json({ mensagem: 'Erro ao criar usuário.', error: error.message });
+    }
+});
+
+// Adicione este bloco de código no seu server.js, dentro da seção de endpoints
+
+// ----- ROTAS DE VEÍCULOS -----
+
+// GET: Retornar todos os veículos de um usuário específico
+// Ex: /api/usuarios/1/veiculos
+app.get('/api/usuarios/:usuarioId/veiculos', async (req, res) => {
+    const { usuarioId } = req.params;
+    try {
+        const sql = 'SELECT * FROM veiculos WHERE usuario_id = ?';
+        const [veiculos] = await pool.query(sql, [usuarioId]);
+        res.json(veiculos);
+    } catch (error) {
+        res.status(500).json({ mensagem: 'Erro ao buscar veículos.', error: error.message });
+    }
+});
+
+// POST: Criar um novo veículo para um usuário
+app.post('/api/veiculos', async (req, res) => {
+    const { nome, tipo, placa, imagem_url, usuario_id } = req.body;
+
+    // Validação básica
+    if (!nome || !tipo || !usuario_id) {
+        return res.status(400).json({ mensagem: 'Nome, tipo e ID do usuário são obrigatórios.' });
     }
 
     try {
-        // --- Conexão com o MongoDB ---
-        const client = new MongoClient(mongoUri);
-        await client.connect();
-        console.log('✅ Conectado com sucesso ao MongoDB!');
+        const sql = 'INSERT INTO veiculos (nome, tipo, placa, imagem_url, usuario_id) VALUES (?, ?, ?, ?, ?)';
+        const [result] = await pool.query(sql, [nome, tipo, placa, imagem_url, usuario_id]);
+        res.status(201).json({ id: result.insertId, ...req.body });
+    } catch (error) {
+        if (error.code === 'ER_DUP_ENTRY') {
+            return res.status(409).json({ mensagem: 'Já existe um veículo com esta placa.' });
+        }
+        res.status(500).json({ mensagem: 'Erro ao cadastrar veículo.', error: error.message });
+    }
+});
 
-        // Seleciona o banco de dados (troque 'garagem_inteligente_db' pelo nome do seu banco)
-        db = client.db('garagem_inteligente_db');
 
-        // Pega as coleções que vamos usar
-        produtosCollection = db.collection('produtos');
-        usuariosCollection = db.collection('usuarios');
-        pedidosCollection = db.collection('pedidos');
-        chamadosCollection = db.collection('chamadosSuporte');
+// --- ROTAS DE MANUTENÇÕES ---
 
-        // Inicia o servidor Express APÓS a conexão com o banco ter sido estabelecida
+// GET: Retornar todas as manutenções
+app.get('/api/manutencoes', async (req, res) => {
+  try {
+    // Usamos um JOIN para buscar também o nome do usuário que registrou a manutenção
+    const sql = `
+        SELECT 
+            m.id, m.titulo, m.descricao, m.data_manutencao, m.custo, m.veiculo, m.status,
+            u.nome as nome_usuario 
+        FROM manutencoes m
+        JOIN usuarios u ON m.usuario_id = u.id
+        ORDER BY m.data_manutencao DESC
+    `;
+    const [rows] = await pool.query(sql);
+    res.json(rows);
+  } catch (error) {
+    res.status(500).json({ mensagem: 'Erro ao buscar manutenções.', error: error.message });
+  }
+});
+
+// POST: Criar uma nova manutenção
+app.post('/api/manutencoes', async (req, res) => {
+    const { titulo, descricao, data_manutencao, custo, veiculo, status, usuario_id } = req.body;
+    if (!titulo || !data_manutencao || !usuario_id) {
+        return res.status(400).json({ mensagem: 'Título, data da manutenção e ID do usuário são obrigatórios.' });
+    }
+    try {
+        const sql = `
+            INSERT INTO manutencoes (titulo, descricao, data_manutencao, custo, veiculo, status, usuario_id) 
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        `;
+        const [result] = await pool.query(sql, [titulo, descricao, data_manutencao, custo, veiculo, status, usuario_id]);
+        res.status(201).json({ id: result.insertId, ...req.body });
+    } catch (error) {
+        res.status(500).json({ mensagem: 'Erro ao registrar manutenção.', error: error.message });
+    }
+});
+
+
+// --- INICIALIZAÇÃO DO SERVIDOR ---
+async function startServer() {
+    try {
+        // Testa a conexão para garantir que está funcionando
+        await pool.query('SELECT 1');
+        console.log('✅ Conectado com sucesso ao banco de dados MySQL!');
+
+        // Inicia o servidor Express
         app.listen(port, () => {
             console.log(`🚀 Servidor backend rodando em http://localhost:${port}`);
-            if (!apiKey) {
-                console.warn('ATENÇÃO: A variável de ambiente OPENWEATHER_API_KEY não foi encontrada.');
-            } else {
-                console.log('Chave da API OpenWeatherMap carregada com sucesso.');
-            }
         });
-
     } catch (error) {
-        console.error('❌ Falha ao conectar ao MongoDB ou iniciar o servidor:', error);
-        process.exit(1);
+        console.error('❌ Falha ao conectar ao MySQL ou iniciar o servidor:', error);
+        process.exit(1); // Encerra se não conseguir conectar ao BD
     }
 }
 
-
-// ----- OS DADOS FALSOS (MOCK DATA) FORAM REMOVIDOS DAQUI -----
-// Agora os dados virão diretamente do MongoDB
-
-
-// ----- ENDPOINTS DA API OPENWEATHERMAP (permanecem iguais) -----
-// ... (seu código de previsão, tempoatual e geocoding continua aqui, sem alterações)
-app.get('/api/previsao/:cidade', async (req, res) => {
-    // seu código aqui...
-});
-
-app.get('/api/tempoatual/:cidade', async (req, res) => {
-    // seu código aqui...
-});
-
-app.get('/api/geocoding/:query', async (req, res) => {
-    // seu código aqui...
-});
-
-
-// ----- ENDPOINTS DA APLICAÇÃO (AGORA USANDO MONGODB) -----
-
-// ENDPOINT 1: Retornar todos os produtos
-app.get('/api/produtos', async (req, res) => {
-  console.log('[Servidor] Requisição recebida em /api/produtos');
-  try {
-    const produtos = await produtosCollection.find({}).toArray();
-    res.json(produtos);
-  } catch (error) {
-    res.status(500).json({ mensagem: 'Erro ao buscar produtos no banco de dados.' });
-  }
-});
-
-// ENDPOINT 2: Retornar um produto específico pelo ID
-app.get('/api/produtos/:id', async (req, res) => {
-  const { id } = req.params;
-  console.log(`[Servidor] Buscando produto com ID: ${id}`);
-  
-  // Validação para evitar que um ID inválido quebre o servidor
-  if (!ObjectId.isValid(id)) {
-    return res.status(400).json({ mensagem: 'Formato de ID inválido.' });
-  }
-  
-  try {
-    const produtoEncontrado = await produtosCollection.findOne({ _id: new ObjectId(id) });
-    if (produtoEncontrado) {
-      res.json(produtoEncontrado);
-    } else {
-      res.status(404).json({ mensagem: 'Produto não encontrado!' });
-    }
-  } catch (error) {
-    res.status(500).json({ mensagem: 'Erro ao buscar produto no banco de dados.' });
-  }
-});
-
-// ENDPOINT 3: Retornar todos os usuários
-app.get('/api/usuarios', async (req, res) => {
-  console.log('[Servidor] Requisição recebida em /api/usuarios');
-  try {
-    const usuarios = await usuariosCollection.find({}).toArray();
-    res.json(usuarios);
-  } catch (error) {
-    res.status(500).json({ mensagem: 'Erro ao buscar usuários.' });
-  }
-});
-
-// ENDPOINT 4: Retornar todos os pedidos
-app.get('/api/pedidos', async (req, res) => {
-    console.log('[Servidor] Requisição recebida em /api/pedidos');
-    try {
-        const pedidos = await pedidosCollection.find({}).toArray();
-        res.json(pedidos);
-    } catch (error) {
-        res.status(500).json({ mensagem: 'Erro ao buscar pedidos.' });
-    }
-});
-
-// ENDPOINT 5: Retornar os pedidos de um usuário específico
-app.get('/api/usuarios/:id/pedidos', async (req, res) => {
-    const usuarioId = parseInt(req.params.id); // Mantendo o ID numérico como no seu exemplo
-    console.log(`[Servidor] Buscando pedidos para o usuário ID: ${usuarioId}`);
-
-    if (isNaN(usuarioId)) {
-        return res.status(400).json({ mensagem: 'ID de usuário deve ser um número.' });
-    }
-
-    try {
-        // Aqui buscamos na coleção de pedidos por um campo 'usuarioId' que corresponda
-        const pedidosDoUsuario = await pedidosCollection.find({ usuarioId: usuarioId }).toArray();
-        res.json(pedidosDoUsuario); // Retorna array vazio se não encontrar, o que é correto
-    } catch (error) {
-        res.status(500).json({ mensagem: 'Erro ao buscar pedidos do usuário.' });
-    }
-});
-
-// ENDPOINT 6: Retornar todos os chamados de suporte
-app.get('/api/chamados', async (req, res) => {
-    console.log('[Servidor] Requisição recebida em /api/chamados');
-    try {
-        const chamados = await chamadosCollection.find({}).toArray();
-        res.json(chamados);
-    } catch (error) {
-        res.status(500).json({ mensagem: 'Erro ao buscar chamados de suporte.' });
-    }
-});
-
-
-// Rota raiz apenas para teste
-app.get('/', (req, res) => {
-    res.send('Servidor Backend da Garagem Inteligente está no ar e conectado ao MongoDB!');
-});
-
-// --- Inicia todo o processo ---
+// Inicia todo o processo
 startServer();

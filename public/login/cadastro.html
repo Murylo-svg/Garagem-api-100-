@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro - Garagem Inteligente</title>
+    
+    <!-- CORREÇÃO IMPORTANTE: O caminho precisa de "../" para voltar uma pasta -->
+    <link rel="stylesheet" href="../CSS/style2.css"> 
+</head>
+<body>
+
+        <!-- Menu Sanduíche (igual ao index.html) -->
+    <div class="menu-container">
+        <div class="menu-icon" id="menu-icon">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <nav class="menu-dropdown" id="menu-dropdown">
+            <ul>
+                <li><a href="../index.html">Página Inicial</a></li>
+            </ul>
+        </nav>
+    </div>
+
+    <div class="auth-container">
+        <div class="auth-box">
+            <h2>Criar Conta</h2>
+            <form id="form-cadastro">
+                <div class="input-group">
+                    <label for="nome">Nome Completo</label>
+                    <input type="text" id="nome" name="nome" required>
+                </div>
+                <div class="input-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                <div class="input-group">
+                    <label for="senha">Senha</label>
+                    <input type="password" id="senha" name="senha" required>
+                </div>
+                <button type="submit" class="btn-auth">Cadastrar</button>
+            </form>
+            <p id="feedback" class="feedback"></p>
+            <div class="auth-link">
+                <p>Já tem uma conta? <a href="login.html">Faça login</a></p>
+            </div>
+        </div>
+    </div>
+    <script src="../JS/cadastro.js"></script>
+    <script src="../JS/menu.js"></script>
+</body>
+</html>

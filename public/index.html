@@ -20,8 +20,8 @@
         </div>
         <nav class="menu-dropdown" id="menu-dropdown">
             <ul>
-                <li><a href="../login/login.html">Logar</a></li>
-                <li><a href="../login/cadastro.html">Criar Conta</a></li>
+                <li><a href="./login/login.html">Logar</a></li>
+                <li><a href="./login/cadastro.html">Criar Conta</a></li>
             </ul>
         </nav>
     </div>
@@ -29,8 +29,60 @@
 
     <div class="container">
         <header>
-            <h1>Garagem do Homem-Aranha</h1>
+            <h1>Garagem V8</h1>
         </header>
+
+        <!DOCTYPE html>
+
+        <!-- ======================================================= -->
+        <!-- ============   NOVA SEÇÃO DE CADASTRO   =============== -->
+        <!-- ======================================================= -->
+        <section id="cadastro-veiculo">
+            <h2>Adicionar Veículo para Manutenção</h2>
+            <form id="form-cadastro-veiculo" class="form-cadastro">
+                <input type="text" id="veiculo-nome" placeholder="Nome ou apelido do veículo (ex: Meu Onix)" required>
+                
+                <select id="veiculo-tipo" required>
+                    <option value="" disabled selected>Selecione o tipo</option>
+                    <option value="Carro Normal">Carro Normal</option>
+                    <option value="Carro Esportivo">Carro Esportivo</option>
+                    <option value="Caminhão">Caminhão</option>
+                </select>
+                
+                <input type="text" id="veiculo-placa" placeholder="Placa (opcional)">
+                
+                <input type="hidden" id="usuario-logado-id" value="1"> <!-- Valor fixo para teste, será dinâmico -->
+
+                <button type="submit" class="btn-salvar">Adicionar Veículo</button>
+            </form>
+            <p id="feedback-veiculo" class="feedback"></p>
+        </section>
+
+
+        <!-- ======================================================= -->
+        <!-- ============      SEÇÃO MODIFICADA      =============== -->
+        <!-- ======================================================= -->
+        <section id="controle-veiculos">
+            <h2>Controle dos Veículos</h2>
+            <!-- Esta div será populada dinamicamente pelo JavaScript -->
+            <div id="veiculos-grid" class="veiculos-grid">
+                <p>Carregando veículos...</p> 
+            </div>
+        </section>
+
+        <section id="manutencao-modificacoes">
+            <h2>Manutenção e Modificações</h2>
+            <div class="selecao-veiculo-manutencao">
+                <label for="veiculo-select">Selecione o Veículo:</label>
+                <!-- Este select também será populado dinamicamente -->
+                <select id="veiculo-select">
+                    <option value="">Carregando...</option>
+                </select>
+            </div>
+
+            <div class="area-modificacoes">
+                <!-- As seções de modificação (formulários) permanecem as mesmas -->
+                <!-- ... (o restante do seu HTML continua aqui) ... -->
 
         <section id="controle-veiculos">
             <h2>Controle dos Veículos</h2>
