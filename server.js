@@ -4,7 +4,7 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import axios from 'axios';
-import mysql from 'mysql2/promise'; // Driver do MySQL
+import mongoose from 'mongoose'; // ORM para MongoDB
 
 // Carrega variáveis de ambiente do arquivo .env
 dotenv.config();
@@ -14,7 +14,7 @@ const app = express();
 const port = process.env.PORT || 3001;
 const apiKey = process.env.OPENWEATHER_API_KEY;
 
-// Middleware para parsear JSON no corpo das requisições (essencial para POST)
+// Middleware para parsear JSON no corpo das requisições
 app.use(express.json());
 
 // Middleware para CORS
@@ -24,16 +24,44 @@ app.use((req, res, next) => {
     next();
 });
 
-// --- 3. CONEXÃO COM O BANCO DE DADOS ---
-const pool = mysql.createPool({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_DATABASE,
-    waitForConnections: true,
-    connectionLimit: 10,
-    queueLimit: 0
+// --- 3. CONEXÃO COM O BANCO DE DADOS MONGODB ---
+// A conexão será iniciada na função startServer() no final do arquivo.
+
+// --- 4. DEFINIÇÃO DOS MODELS (SCHEMAS) DO MONGOOSE ---
+
+// Schema para Usuários
+const usuarioSchema = new mongoose.Schema({
+    nome: { type: String, required: true },
+    email: { type: String, required: true, unique: true }, // 'unique' cria um índice para garantir que o email não se repita
+    senha: { type: String, required: true },
+    data_criacao: { type: Date, default: Date.now }
 });
+const Usuario = mongoose.model('Usuario', usuarioSchema);
+
+// Schema para Veículos
+const veiculoSchema = new mongoose.Schema({
+    nome: { type: String, required: true },
+    tipo: { type: String, required: true, enum: ['Carro', 'Moto', 'Caminhão', 'Outro'] }, // enum para tipos pré-definidos
+    placa: { type: String, unique: true, sparse: true }, // Permite múltiplas placas nulas, mas placas preenchidas devem ser únicas
+    imagem_url: { type: String },
+    // Referência ao usuário proprietário do veículo
+    usuario_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Usuario', required: true }
+});
+const Veiculo = mongoose.model('Veiculo', veiculoSchema);
+
+// Schema para Manutenções
+const manutencaoSchema = new mongoose.Schema({
+    titulo: { type: String, required: true },
+    descricao: { type: String },
+    data_manutencao: { type: Date, required: true },
+    custo: { type: Number, default: 0 },
+    veiculo: { type: String }, // Mantido como String simples, mas poderia ser uma referência a um Veiculo
+    status: { type: String, default: 'Pendente' },
+    // Referência ao usuário que registrou a manutenção
+    usuario_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Usuario', required: true }
+});
+const Manutencao = mongoose.model('Manutencao', manutencaoSchema);
+
 
 // ----- ENDPOINTS DA API OPENWEATHERMAP (Extras, permanecem iguais) -----
 app.get('/api/previsao/:cidade', async (req, res) => {
@@ -58,47 +86,47 @@ app.get('/api/previsao/:cidade', async (req, res) => {
 // GET: Retornar todos os usuários (sem a senha)
 app.get('/api/usuarios', async (req, res) => {
   try {
-    // Selecionamos todas as colunas, exceto a senha, por segurança.
-    const [rows] = await pool.query('SELECT id, nome, email, data_criacao FROM usuarios');
-    res.json(rows);
+    // Usamos .select('-senha') para excluir o campo da senha do retorno
+    const usuarios = await Usuario.find().select('-senha');
+    res.json(usuarios);
   } catch (error) {
     res.status(500).json({ mensagem: 'Erro ao buscar usuários.', error: error.message });
   }
 });
 
 // POST: Criar um novo usuário (ex: registro)
-// NOTA: Em um app real, você usaria bcrypt para hashear a senha antes de salvar!
 app.post('/api/usuarios', async (req, res) => {
     const { nome, email, senha } = req.body;
     if (!nome || !email || !senha) {
         return res.status(400).json({ mensagem: 'Nome, email e senha são obrigatórios.' });
     }
     try {
-        const sql = 'INSERT INTO usuarios (nome, email, senha) VALUES (?, ?, ?)';
-        // !! AVISO DE SEGURANÇA: Aqui estamos salvando a senha como texto puro.
-        // !! Em produção, use: const hash = await bcrypt.hash(senha, 10); e salve o hash.
-        const [result] = await pool.query(sql, [nome, email, senha]);
-        res.status(201).json({ id: result.insertId, nome, email });
+        // !! AVISO DE SEGURANÇA: Continue usando bcrypt para hashear a senha!
+        const novoUsuario = new Usuario({ nome, email, senha });
+        const usuarioSalvo = await novoUsuario.save();
+        
+        // Remove a senha do objeto de resposta
+        const resposta = usuarioSalvo.toObject();
+        delete resposta.senha;
+
+        res.status(201).json(resposta);
     } catch (error) {
-        // Código 'ER_DUP_ENTRY' é específico do MySQL para entradas duplicadas
-        if (error.code === 'ER_DUP_ENTRY') {
+        // Código 11000 é o erro do MongoDB para chave duplicada
+        if (error.code === 11000) {
             return res.status(409).json({ mensagem: 'Este email já está cadastrado.' });
         }
         res.status(500).json({ mensagem: 'Erro ao criar usuário.', error: error.message });
     }
 });
 
-// Adicione este bloco de código no seu server.js, dentro da seção de endpoints
 
 // ----- ROTAS DE VEÍCULOS -----
 
 // GET: Retornar todos os veículos de um usuário específico
-// Ex: /api/usuarios/1/veiculos
 app.get('/api/usuarios/:usuarioId/veiculos', async (req, res) => {
     const { usuarioId } = req.params;
     try {
-        const sql = 'SELECT * FROM veiculos WHERE usuario_id = ?';
-        const [veiculos] = await pool.query(sql, [usuarioId]);
+        const veiculos = await Veiculo.find({ usuario_id: usuarioId });
         res.json(veiculos);
     } catch (error) {
         res.status(500).json({ mensagem: 'Erro ao buscar veículos.', error: error.message });
@@ -108,18 +136,15 @@ app.get('/api/usuarios/:usuarioId/veiculos', async (req, res) => {
 // POST: Criar um novo veículo para um usuário
 app.post('/api/veiculos', async (req, res) => {
     const { nome, tipo, placa, imagem_url, usuario_id } = req.body;
-
-    // Validação básica
     if (!nome || !tipo || !usuario_id) {
         return res.status(400).json({ mensagem: 'Nome, tipo e ID do usuário são obrigatórios.' });
     }
-
     try {
-        const sql = 'INSERT INTO veiculos (nome, tipo, placa, imagem_url, usuario_id) VALUES (?, ?, ?, ?, ?)';
-        const [result] = await pool.query(sql, [nome, tipo, placa, imagem_url, usuario_id]);
-        res.status(201).json({ id: result.insertId, ...req.body });
+        const novoVeiculo = new Veiculo({ nome, tipo, placa, imagem_url, usuario_id });
+        const veiculoSalvo = await novoVeiculo.save();
+        res.status(201).json(veiculoSalvo);
     } catch (error) {
-        if (error.code === 'ER_DUP_ENTRY') {
+        if (error.code === 11000) {
             return res.status(409).json({ mensagem: 'Já existe um veículo com esta placa.' });
         }
         res.status(500).json({ mensagem: 'Erro ao cadastrar veículo.', error: error.message });
@@ -129,20 +154,22 @@ app.post('/api/veiculos', async (req, res) => {
 
 // --- ROTAS DE MANUTENÇÕES ---
 
-// GET: Retornar todas as manutenções
+// GET: Retornar todas as manutenções com o nome do usuário
 app.get('/api/manutencoes', async (req, res) => {
   try {
-    // Usamos um JOIN para buscar também o nome do usuário que registrou a manutenção
-    const sql = `
-        SELECT 
-            m.id, m.titulo, m.descricao, m.data_manutencao, m.custo, m.veiculo, m.status,
-            u.nome as nome_usuario 
-        FROM manutencoes m
-        JOIN usuarios u ON m.usuario_id = u.id
-        ORDER BY m.data_manutencao DESC
-    `;
-    const [rows] = await pool.query(sql);
-    res.json(rows);
+    // Usamos .populate() para buscar dados de outra coleção (similar ao JOIN)
+    // Aqui, buscamos o 'nome' do usuário referenciado pelo campo 'usuario_id'
+    const manutencoes = await Manutencao.find()
+        .populate('usuario_id', 'nome') // O segundo argumento seleciona quais campos trazer
+        .sort({ data_manutencao: -1 }); // -1 para ordem decrescente
+
+    // Renomeia o campo para manter a consistência com o frontend, se necessário
+    const resposta = manutencoes.map(m => ({
+        ...m.toObject(),
+        nome_usuario: m.usuario_id ? m.usuario_id.nome : 'Usuário não encontrado'
+    }));
+
+    res.json(resposta);
   } catch (error) {
     res.status(500).json({ mensagem: 'Erro ao buscar manutenções.', error: error.message });
   }
@@ -155,12 +182,9 @@ app.post('/api/manutencoes', async (req, res) => {
         return res.status(400).json({ mensagem: 'Título, data da manutenção e ID do usuário são obrigatórios.' });
     }
     try {
-        const sql = `
-            INSERT INTO manutencoes (titulo, descricao, data_manutencao, custo, veiculo, status, usuario_id) 
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-        `;
-        const [result] = await pool.query(sql, [titulo, descricao, data_manutencao, custo, veiculo, status, usuario_id]);
-        res.status(201).json({ id: result.insertId, ...req.body });
+        const novaManutencao = new Manutencao({ titulo, descricao, data_manutencao, custo, veiculo, status, usuario_id });
+        const manutencaoSalva = await novaManutencao.save();
+        res.status(201).json(manutencaoSalva);
     } catch (error) {
         res.status(500).json({ mensagem: 'Erro ao registrar manutenção.', error: error.message });
     }
@@ -170,16 +194,16 @@ app.post('/api/manutencoes', async (req, res) => {
 // --- INICIALIZAÇÃO DO SERVIDOR ---
 async function startServer() {
     try {
-        // Testa a conexão para garantir que está funcionando
-        await pool.query('SELECT 1');
-        console.log('✅ Conectado com sucesso ao banco de dados MySQL!');
+        // Conecta ao MongoDB usando a URI do .env
+        await mongoose.connect(process.env.MONGODB_URI);
+        console.log('✅ Conectado com sucesso ao banco de dados MongoDB!');
 
         // Inicia o servidor Express
         app.listen(port, () => {
             console.log(`🚀 Servidor backend rodando em http://localhost:${port}`);
         });
     } catch (error) {
-        console.error('❌ Falha ao conectar ao MySQL ou iniciar o servidor:', error);
+        console.error('❌ Falha ao conectar ao MongoDB ou iniciar o servidor:', error);
         process.exit(1); // Encerra se não conseguir conectar ao BD
     }
 }
