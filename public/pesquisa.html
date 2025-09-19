@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pesquisar Peças - Garagem do Aranha</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bangers&display=swap">
+    <link rel="stylesheet" href="CSS/style.css">
+</head>
+<body>
+    <div class="overlay">
+        <div class="auth-container">
+            <div class="form-container">
+                <h2>Pesquisar Peças</h2>
+                <form id="formPesquisa">
+                    <div class="form-group">
+                        <label for="peca">Qual peça você procura?</label>
+                        <input type="text" id="peca" placeholder="Ex: pastilhas de freio Honda Civic" required>
+                    </div>
+                    <div class="form-group">
+                        <button type="submit">Pesquisar no Google</button>
+                    </div>
+                    <div class="auth-links">
+                        <a href="index.html">Voltar para a Garagem</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Lógica para a busca no Google
+        document.getElementById('formPesquisa').addEventListener('submit', function(e) {
+            // Previne o envio padrão do formulário
+            e.preventDefault(); 
+            
+            // Pega o que o usuário digitou
+            const consultaUsuario = document.getElementById('peca').value;
+
+            // Monta a busca completa, adicionando um termo específico
+            const buscaCompleta = "peças de manutenção " + consultaUsuario;
+
+            // Codifica a busca para ser usada em uma URL (trata espaços, acentos, etc.)
+            const urlGoogle = `https://www.google.com/search?q=${encodeURIComponent(buscaCompleta)}`;
+
+            // Abre a busca em uma nova aba do navegador
+            window.open(urlGoogle, '_blank');
+        });
+    </script>
+</body>
+</html>

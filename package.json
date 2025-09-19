@@ -1,26 +1,12 @@
 {
+  "type": "module",
   "dependencies": {
-    "atlas": "^1.0.0-alpha.0",
-    "axios": "^1.9.0",
-    "bcrypt": "^6.0.0",
-    "dotenv": "^16.6.1",
+    "bcryptjs": "^3.0.2",
+    "dotenv": "^16.5.0",
     "express": "^5.1.0",
-    "mongodb": "^6.18.0",
-    "mongoose": "^8.17.1",
-    "mysql2": "^3.14.3",
-    "path": "^0.12.7",
-    "sqlite": "^5.1.1",
-    "sqlite3": "^5.1.7"
-  },
-  "name": "garagem-3.0",
-  "version": "1.0.0",
-  "main": "server.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": ""
+    "jsonwebtoken": "^9.0.2",
+    "mongodb": "^6.20.0",
+    "mongoose": "^8.18.1",
+    "path": "^0.12.7"
+  }
 }
