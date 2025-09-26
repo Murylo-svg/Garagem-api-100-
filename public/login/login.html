@@ -3,22 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <title>Login</title>
-    <link rel="stylesheet" href="../CSS/style.css"> <!-- Seu CSS -->
+    <link rel="stylesheet" href="../CSS/style2.css"> <!-- Seu CSS -->
 </head>
 <body>
-    <div class="form-container">
+    <div class="auth-box"> <!-- Substituído de form-container para auth-box -->
         <h2>Login</h2>
         <form id="formLogin">
-            <input type="email" id="email" placeholder="Email" required>
-            <input type="password" id="senha" placeholder="Senha" required>
-            <button type="submit">Entrar</button>
+            <div class="input-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" placeholder="Seu email" required>
+            </div>
+            <div class="input-group">
+                <label for="senha">Senha</label>
+                <input type="password" id="senha" placeholder="Sua senha" required>
+            </div>
+            <button type="submit" class="btn-auth">Entrar</button> <!-- Adicionada classe btn-auth -->
         </form>
         <!-- Div para mostrar mensagens de sucesso ou erro -->
-        <div id="mensagem"></div>
-        <p>Não tem uma conta? <a href="/cadastro.html">Cadastre-se</a></p>
+        <div id="mensagem" class="feedback"></div> <!-- Adicionada classe feedback -->
+        <p class="auth-link">Não tem uma conta? <a href="/cadastro.html">Cadastre-se</a></p> <!-- Adicionada classe auth-link -->
     </div>
 
     <!-- Carregue o script no final do body -->
-    <script src="js/login.js"></script>
+    <script src="../JS/login.js"></script>
 </body>
 </html>

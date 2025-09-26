@@ -1,74 +1,58 @@
-// js/cadastro.js
+// Aguarda o conteúdo do DOM ser completamente carregado antes de executar o script
+document.addEventListener('DOMContentLoaded', function() {
 
-document.addEventListener('DOMContentLoaded', () => {
     // Seleciona os elementos do formulário
-    const form = document.getElementById('formCadastro');
+    const formCadastro = document.getElementById('formCadastro');
     const nomeInput = document.getElementById('nome');
     const emailInput = document.getElementById('email');
     const senhaInput = document.getElementById('senha');
     const confirmarSenhaInput = document.getElementById('confirmarSenha');
-    const mensagemDiv = document.getElementById('mensagem'); // Um <div> para exibir feedback
+    const mensagemDiv = document.getElementById('mensagem');
 
-    // Se o formulário não existir nesta página, o script para de executar
-    if (!form) return;
+    // Adiciona um "escutador" para o evento de submit do formulário
+    formCadastro.addEventListener('submit', function(event) {
+        // Previne o comportamento padrão do formulário (que é recarregar a página)
+        event.preventDefault();
 
-    // Função para exibir mensagens de erro ou sucesso
-    const exibirMensagem = (msg, tipo) => {
-        mensagemDiv.textContent = msg;
-        // Adiciona uma classe para estilizar a mensagem (ex: .sucesso, .erro)
-        mensagemDiv.className = tipo; 
-    };
-
-    // Adiciona um evento que é disparado quando o formulário é enviado
-    form.addEventListener('submit', async (e) => {
-        e.preventDefault(); // Impede o comportamento padrão de recarregar a página
-
-        // Pega os valores dos campos, removendo espaços em branco
+        // Pega os valores dos campos, removendo espaços em branco no início e no fim
         const nome = nomeInput.value.trim();
         const email = emailInput.value.trim();
-        const senha = senhaInput.value;
-        const confirmarSenha = confirmarSenhaInput.value;
+        const senha = senhaInput.value.trim();
+        const confirmarSenha = confirmarSenhaInput.value.trim();
 
-        // --- Validação no Frontend ---
-        if (senha !== confirmarSenha) {
-            exibirMensagem('As senhas não são iguais.', 'erro');
-            return;
-        }
+        // Limpa mensagens anteriores
+        mensagemDiv.textContent = '';
+        mensagemDiv.style.color = 'red'; // Cor padrão para erros
 
+        // --- VALIDAÇÕES ---
+
+        // 1. Validação do comprimento da senha
         if (senha.length < 6) {
-            exibirMensagem('A senha deve ter pelo menos 6 caracteres.', 'erro');
-            return;
+            mensagemDiv.textContent = 'A senha deve ter no mínimo 6 caracteres.';
+            return; // Para a execução se a senha for inválida
         }
 
-        // --- Envio dos dados para a API ---
-        try {
-            // Faz a requisição POST para o endpoint de registro no backend
-            const resposta = await fetch('/api/auth/registrar', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ nome, email, senha }),
-            });
-
-            const dados = await resposta.json();
-
-            if (resposta.ok) { // Se a resposta foi bem-sucedida (status 2xx)
-                exibirMensagem('Cadastro realizado com sucesso! Redirecionando...', 'sucesso');
-                form.reset(); // Limpa o formulário
-                
-                // Espera 2 segundos e redireciona o usuário para a página de login
-                setTimeout(() => {
-                    window.location.href = '/login.html'; // Altere se o nome da sua página for diferente
-                }, 2000);
-            } else {
-                // Se o servidor retornou um erro (ex: email já existe)
-                exibirMensagem(dados.error || 'Ocorreu um erro desconhecido.', 'erro');
-            }
-        } catch (error) {
-            // Se houve um erro de rede (servidor fora do ar, etc.)
-            console.error('Erro na requisição:', error);
-            exibirMensagem('Não foi possível conectar ao servidor. Tente novamente mais tarde.', 'erro');
+        // 2. Validação de confirmação de senha
+        if (senha !== confirmarSenha) {
+            mensagemDiv.textContent = 'As senhas não conferem.';
+            return; // Para a execução se as senhas forem diferentes
         }
+
+        // --- SUCESSO ---
+
+        // Se todas as validações passaram
+        console.log('Dados do Cadastro:', { nome, email, senha }); // Mostra os dados no console
+        
+        // Exibe mensagem de sucesso para o usuário
+        mensagemDiv.textContent = 'Cadastro realizado com sucesso!';
+        mensagemDiv.style.color = 'green';
+
+        // Limpa o formulário após o sucesso
+        formCadastro.reset();
+
+        // Opcional: Redireciona para a página de login após alguns segundos
+        setTimeout(() => {
+            window.location.href = '/login.html'; // Redireciona para a página de login
+        }, 2000); // 2000 milissegundos = 2 segundos
     });
 });
