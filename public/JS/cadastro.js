@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Opcional: Redireciona para a página de login após alguns segundos
         setTimeout(() => {
-            window.location.href = '/login.html'; // Redireciona para a página de login
+            window.location.href = 'login.html'; // Redireciona para a página de login
         }, 2000); // 2000 milissegundos = 2 segundos
     });
 });

@@ -196,3 +196,34 @@ h2 {
 /* ======================================================= */
 /* (Aqui vai todo o resto do seu CSS para previsao-tempo, veiculos-grid, etc.) */
 /* ... Cole o restante do seu CSS aqui para manter tudo em um só lugar ... */
+
+/* Estilo para o botão "Voltar ao Início" */
+.back-to-home {
+    position: absolute; /* Posição absoluta em relação ao body/viewport */
+    top: 20px;          /* 20px do topo */
+    left: 20px;         /* 20px da esquerda */
+    padding: 10px 15px; /* Preenchimento interno */
+    background-color: #007bff; /* Cor de fundo azul */
+    color: white;       /* Texto branco */
+    text-decoration: none; /* Sem sublinhado */
+    border-radius: 5px; /* Cantos arredondados */
+    font-weight: bold;  /* Texto em negrito */
+    transition: background-color 0.3s ease; /* Transição suave na cor de fundo */
+    z-index: 1000;      /* Garante que fique acima de outros elementos */
+}
+
+.back-to-home:hover {
+    background-color: #0056b3; /* Cor de fundo mais escura ao passar o mouse */
+}
+
+/* Opcional: Ajuste o body ou a caixa de autenticação se o botão estiver sobrepondo */
+body {
+    position: relative; /* Importante para que a posição 'absolute' do botão se baseie no body */
+    /* Outros estilos do body */
+}
+
+/* Se você precisar que a caixa de autenticação não fique muito perto do botão */
+.auth-box {
+    margin-top: 70px; /* Ou ajuste o padding-top do body, dependendo do seu layout */
+    /* Outros estilos da auth-box */
+}
