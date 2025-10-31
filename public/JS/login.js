@@ -1,80 +1,66 @@
-// Aguarda o conteúdo do DOM ser completamente carregado antes de executar o script
+// login.js
 document.addEventListener('DOMContentLoaded', function() {
-
-    // Seleciona os elementos do formulário de login
     const formLogin = document.getElementById('formLogin');
     const emailInput = document.getElementById('email');
     const senhaInput = document.getElementById('senha');
     const mensagemDiv = document.getElementById('mensagem');
 
-    // Adiciona um "escutador" para o evento de submit do formulário
-    formLogin.addEventListener('submit', function(event) {
-        // Previne o comportamento padrão do formulário (que é recarregar a página)
+    formLogin.addEventListener('submit', async function(event) {
         event.preventDefault();
 
-        // Pega os valores dos campos, removendo espaços em branco no início e no fim
         const email = emailInput.value.trim();
         const senha = senhaInput.value.trim();
 
-        // Limpa mensagens anteriores
         mensagemDiv.textContent = '';
-        mensagemDiv.style.color = 'red'; // Cor padrão para erros
+        mensagemDiv.style.color = 'red';
 
         // --- VALIDAÇÕES BÁSICAS NO CLIENTE ---
-
-        // 1. Validação de campos vazios
         if (!email || !senha) {
             mensagemDiv.textContent = 'Por favor, preencha todos os campos.';
             return;
         }
-
-        // 2. Validação simples de formato de email (pode ser mais robusta)
         if (!email.includes('@') || !email.includes('.')) {
             mensagemDiv.textContent = 'Por favor, insira um email válido.';
             return;
         }
 
-        // --- SIMULAÇÃO DE LOGIN COM SERVIDOR (REAL-WORLD SCENARIO) ---
-        // Em um cenário real, você faria uma requisição HTTP (fetch ou XMLHttpRequest) para seu backend aqui.
+        // --- REQUISIÇÃO PARA O BACKEND DE LOGIN ---
+        try {
+            const response = await fetch('http://localhost:3001/api/auth/login', { // URL da sua API de login
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    Email_login: email, // Corresponde ao nome da coluna no MySQL
+                    Senha_login: senha // Corresponde ao nome da coluna no MySQL
+                })
+            });
 
-        console.log('Tentando logar com:', { email, senha });
+            const data = await response.json();
 
-        // Exemplo de requisição (ASSUMA que o servidor está rodando em http://localhost:3001)
-        fetch('http://localhost:3001/api/auth/login', { // Altere para a URL do seu backend
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ email, senha })
-        })
-        .then(response => response.json()) // Converte a resposta para JSON
-        .then(data => {
-            if (data.token) { // Se o login foi bem-sucedido e retornou um token
-                mensagemDiv.textContent = `Login bem-sucedido! Bem-vindo(a), ${data.nomeUsuario}!`;
+            if (response.ok && data.token) { // Se o login foi bem-sucedido e retornou um token
+                mensagemDiv.textContent = `Login bem-sucedido! Bem-vindo(a), ${data.nomeUsuario || email}!`;
                 mensagemDiv.style.color = 'green';
-                
-                // Opcional: Salvar o token no localStorage para manter o usuário logado
-                localStorage.setItem('userToken', data.token);
-                localStorage.setItem('userName', data.nomeUsuario);
 
-                // Redireciona para uma página protegida (ex: dashboard)
+                // Salvar o token e o nome do usuário no localStorage
+                localStorage.setItem('userToken', data.token);
+                localStorage.setItem('userName', data.nomeUsuario || email); // Use o nome retornado ou o email
+
+                // Redireciona para a página principal ou dashboard
                 setTimeout(() => {
-                    window.location.href = 'index.html'; // Altere para a página principal após o login
-                }, 1500); // 1.5 segundos
+                    window.location.href = 'index.html';
+                }, 1500);
             } else {
                 // Se o servidor retornou um erro (ex: credenciais inválidas)
-                mensagemDiv.textContent = data.error || 'Erro ao fazer login. Verifique suas credenciais.';
-                mensagemDiv.style.color = 'red';
+                mensagemDiv.textContent = data.message || 'Erro ao fazer login. Verifique suas credenciais.';
             }
-        })
-        .catch(error => {
-            // Lidar com erros de rede ou servidor não acessível
+        } catch (error) {
             console.error('Erro na requisição de login:', error);
             mensagemDiv.textContent = 'Erro ao conectar com o servidor. Tente novamente mais tarde.';
-            mensagemDiv.style.color = 'red';
-        });
-
-        // Limpa o campo da senha por segurança após a tentativa de login (mantém o email)
-        senhaInput.value = '';
+        } finally {
+            // Limpa o campo da senha por segurança após a tentativa de login
+            senhaInput.value = '';
+        }
     });
 });
