@@ -1,48 +1,21 @@
-// main.js
+// public/js/main.js
 document.addEventListener('DOMContentLoaded', () => {
 
-    // Função auxiliar para obter o cabeçalho de autorização
     function getAuthHeader() {
         const token = localStorage.getItem('userToken');
         return token ? { 'Authorization': `Bearer ${token}` } : {};
     }
 
-    // -----------------------------------------
-    // 1. LÓGICA DO MENU HAMBÚRGUER (sem alterações de backend)
-    // -----------------------------------------
-    const hamburgerBtn = document.getElementById('hamburger-btn');
-    const navMenu = document.getElementById('nav-menu');
-
-    if (hamburgerBtn && navMenu) {
-        hamburgerBtn.addEventListener('click', () => {
-            hamburgerBtn.classList.toggle('active');
-            navMenu.classList.toggle('active');
-        });
-
-        document.addEventListener('click', (event) => {
-            const isClickInsideMenu = navMenu.contains(event.target);
-            const isClickOnHamburger = hamburgerBtn.contains(event.target);
-
-            if (!isClickInsideMenu && !isClickOnHamburger && navMenu.classList.contains('active')) {
-                hamburgerBtn.classList.remove('active');
-                navMenu.classList.remove('active');
-            }
-        });
-    }
-
-    // -----------------------------------------
-    // 2. LÓGICA PARA AGENDAMENTOS (AGORA COM BACKEND)
-    // -----------------------------------------
     const formAgendamento = document.getElementById('formAgendamento');
     const listaAgendamentos = document.getElementById('listaAgendamentos');
-    const agendamentoMensagemDiv = document.getElementById('agendamentoMensagem'); // Adicionado para mensagens de agendamento
+    const formVeiculo = document.getElementById('formVeiculo');
+    const listaVeiculos = document.getElementById('listaVeiculos');
 
     if (formAgendamento && listaAgendamentos) {
-        carregarAgendamentos(); // Carrega agendamentos do backend
+        carregarAgendamentos();
 
         formAgendamento.addEventListener('submit', async (e) => {
             e.preventDefault();
-
             const data = document.getElementById('data').value;
             const hora = document.getElementById('hora').value;
             const descricao = document.getElementById('descricao').value;
@@ -51,248 +24,194 @@ document.addEventListener('DOMContentLoaded', () => {
                 const agendamento = { data, hora, descricao };
                 await salvarAgendamento(agendamento);
                 formAgendamento.reset();
-                listaAgendamentos.innerHTML = ''; // Limpa a lista para recarregar do backend
-                carregarAgendamentos();
             } else {
-                exibirMensagem(agendamentoMensagemDiv, 'Por favor, preencha todos os campos do agendamento.', 'red');
+                showToast('Por favor, preencha todos os campos do agendamento.', 'error');
             }
         });
     }
 
     async function salvarAgendamento(agendamento) {
         try {
-            const response = await fetch('http://localhost:3001/api/agendamentos', {
+            const response = await fetch('/api/agendamentos', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    ...getAuthHeader() // Inclui o token de autenticação
-                },
+                headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
                 body: JSON.stringify(agendamento)
             });
-
             const data = await response.json();
-            if (response.ok) {
-                exibirMensagem(agendamentoMensagemDiv, data.message || 'Agendamento adicionado com sucesso!', 'green');
-            } else {
-                exibirMensagem(agendamentoMensagemDiv, data.message || 'Erro ao adicionar agendamento.', 'red');
+            if (!response.ok) {
+                throw new Error(data.message || 'Erro ao adicionar agendamento.');
             }
+            showToast('Agendamento adicionado com sucesso!', 'success');
+            carregarAgendamentos();
         } catch (error) {
             console.error('Erro ao salvar agendamento:', error);
-            exibirMensagem(agendamentoMensagemDiv, 'Erro de conexão ao salvar agendamento.', 'red');
+            showToast(error.message, 'error');
         }
     }
 
     async function carregarAgendamentos() {
-        listaAgendamentos.innerHTML = '<p>Carregando agendamentos...</p>';
+        // The skeleton loader is already in the HTML. We just need to replace it.
         try {
-            const response = await fetch('http://localhost:3001/api/agendamentos', {
-                headers: getAuthHeader()
-            });
+            const response = await fetch('/api/agendamentos', { headers: getAuthHeader() });
             const agendamentos = await response.json();
 
-            listaAgendamentos.innerHTML = ''; // Limpa a mensagem de carregamento
+            listaAgendamentos.innerHTML = '';
             if (response.ok && agendamentos.length > 0) {
-                agendamentos.sort((a, b) => new Date(a.data + 'T' + a.hora) - new Date(b.data + 'T' + b.hora));
                 agendamentos.forEach(agendamento => adicionarAgendamentoNaLista(agendamento));
             } else if (response.ok) {
                 listaAgendamentos.innerHTML = '<p>Nenhum agendamento encontrado.</p>';
             } else {
-                exibirMensagem(agendamentoMensagemDiv, agendamentos.message || 'Erro ao carregar agendamentos.', 'red');
-                listaAgendamentos.innerHTML = '<p>Erro ao carregar agendamentos.</p>';
+                throw new Error(agendamentos.message || 'Erro ao carregar agendamentos.');
             }
         } catch (error) {
             console.error('Erro ao carregar agendamentos:', error);
-            exibirMensagem(agendamentoMensagemDiv, 'Erro de conexão ao carregar agendamentos.', 'red');
-            listaAgendamentos.innerHTML = '<p>Erro de conexão ao carregar agendamentos.</p>';
+            listaAgendamentos.innerHTML = `<p style="color: var(--accent-color);">${error.message}</p>`;
         }
     }
 
     function adicionarAgendamentoNaLista(agendamento) {
-        const li = document.createElement('li');
-        li.className = 'agendamento-item';
-        li.dataset.id = agendamento.ID_Agendamento || agendamento.id; // Supondo ID_Agendamento do backend
+        const item = document.createElement('div');
+        item.className = 'skeleton-card'; // Re-using the card style
+        item.dataset.id = agendamento._id;
 
-        li.innerHTML = `
-            <p><strong>Data:</strong> ${formatarData(agendamento.data)}</p>
+        item.innerHTML = `
+            <p><strong>Data:</strong> ${new Date(agendamento.data).toLocaleDateString()}</p>
             <p><strong>Hora:</strong> ${agendamento.hora}</p>
             <p><strong>Descrição:</strong> ${agendamento.descricao}</p>
-            <button class="delete-btn" data-id="${agendamento.ID_Agendamento || agendamento.id}">Excluir</button>
+            <button class="btn delete-btn" style="width: auto; background-color: #555;" data-id="${agendamento._id}">Excluir</button>
         `;
-        listaAgendamentos.appendChild(li);
+        listaAgendamentos.appendChild(item);
 
-        li.querySelector('.delete-btn').addEventListener('click', async (e) => {
-            const idParaExcluir = e.target.dataset.id;
-            await excluirAgendamento(idParaExcluir);
-            // Após excluir no backend, recarrega a lista para refletir a mudança
-            listaAgendamentos.innerHTML = '';
-            carregarAgendamentos();
+        item.querySelector('.delete-btn').addEventListener('click', async (e) => {
+            const id = e.target.dataset.id;
+            await excluirAgendamento(id);
         });
     }
 
     async function excluirAgendamento(id) {
+        if (!confirm('Tem certeza que deseja excluir este agendamento?')) return;
         try {
-            const response = await fetch(`http://localhost:3001/api/agendamentos/${id}`, {
+            const response = await fetch(`/api/agendamentos/${id}`, {
                 method: 'DELETE',
                 headers: getAuthHeader()
             });
-
             const data = await response.json();
-            if (response.ok) {
-                exibirMensagem(agendamentoMensagemDiv, data.message || 'Agendamento excluído com sucesso!', 'green');
-            } else {
-                exibirMensagem(agendamentoMensagemDiv, data.message || 'Erro ao excluir agendamento.', 'red');
+            if (!response.ok) {
+                throw new Error(data.message || 'Erro ao excluir agendamento.');
             }
+            showToast('Agendamento excluído com sucesso!', 'success');
+            carregarAgendamentos();
         } catch (error) {
             console.error('Erro ao excluir agendamento:', error);
-            exibirMensagem(agendamentoMensagemDiv, 'Erro de conexão ao excluir agendamento.', 'red');
+            showToast(error.message, 'error');
         }
     }
 
-    function formatarData(dataString) {
-        const date = new Date(dataString); // Cria um objeto Date a partir da string
-        // Garante que o mês e o dia tenham 2 dígitos (ex: 01, 02)
-        const dia = String(date.getUTCDate()).padStart(2, '0');
-        const mes = String(date.getUTCMonth() + 1).padStart(2, '0'); // Mês é 0-indexado
-        const ano = date.getUTCFullYear();
-        return `${dia}/${mes}/${ano}`;
-    }
-
-
-    // -----------------------------------------
-    // 3. LÓGICA PARA VEÍCULOS (AGORA COM BACKEND)
-    // -----------------------------------------
-    const formVeiculo = document.getElementById('formVeiculo');
-    const listaVeiculos = document.getElementById('listaVeiculos');
-    const veiculoMensagemDiv = document.getElementById('veiculoMensagem'); // Adicionado para mensagens de veículo
-
+    // --- VEÍCULOS ---
     if (formVeiculo && listaVeiculos) {
-        carregarVeiculos(); // Carrega veículos do backend
+        carregarVeiculos();
 
         formVeiculo.addEventListener('submit', async (e) => {
             e.preventDefault();
-
             const modelo = document.getElementById('modeloVeiculo').value;
             const placa = document.getElementById('placaVeiculo').value;
             const ano = document.getElementById('anoVeiculo').value;
-            // Adicionando proprietario e cor, que estão nas tabelas do MySQL
-            const nomeProprietario = localStorage.getItem('userName') || 'Desconhecido'; // Pegar do usuário logado
-            const cor = document.getElementById('corVeiculo') ? document.getElementById('corVeiculo').value : 'Não Informada'; // Se você adicionar um campo de cor
+            const nomeProprietario = localStorage.getItem('userName') || 'Desconhecido';
 
             if (modelo && placa && ano) {
-                const veiculo = {
-                    modelo: modelo,
-                    placa: placa,
-                    ano: ano,
-                    cor: cor, // Adicionado
-                    nomeProprietario: nomeProprietario // Adicionado
-                };
+                const veiculo = { modelo, placa, ano, nomeProprietario };
                 await salvarVeiculo(veiculo);
                 formVeiculo.reset();
-                listaVeiculos.innerHTML = ''; // Limpa a lista para recarregar do backend
-                carregarVeiculos();
             } else {
-                exibirMensagem(veiculoMensagemDiv, 'Por favor, preencha todos os campos do veículo (Modelo, Placa, Ano).', 'red');
+                showToast('Por favor, preencha todos os campos do veículo.', 'error');
             }
         });
     }
 
     async function salvarVeiculo(veiculo) {
         try {
-            const response = await fetch('http://localhost:3001/api/veiculos', {
+            const response = await fetch('/api/veiculos', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    ...getAuthHeader()
-                },
+                headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
                 body: JSON.stringify(veiculo)
             });
-
             const data = await response.json();
-            if (response.ok) {
-                exibirMensagem(veiculoMensagemDiv, data.message || 'Veículo adicionado com sucesso!', 'green');
-            } else {
-                exibirMensagem(veiculoMensagemDiv, data.message || 'Erro ao adicionar veículo.', 'red');
+            if (!response.ok) {
+                throw new Error(data.message || 'Erro ao adicionar veículo.');
             }
+            showToast('Veículo adicionado com sucesso!', 'success');
+            carregarVeiculos();
         } catch (error) {
             console.error('Erro ao salvar veículo:', error);
-            exibirMensagem(veiculoMensagemDiv, 'Erro de conexão ao salvar veículo.', 'red');
+            showToast(error.message, 'error');
         }
     }
 
     async function carregarVeiculos() {
-        listaVeiculos.innerHTML = '<p>Carregando veículos...</p>';
+        // Skeleton loader is in the HTML
         try {
-            const response = await fetch('http://localhost:3001/api/veiculos', {
-                headers: getAuthHeader()
-            });
+            const response = await fetch('/api/veiculos', { headers: getAuthHeader() });
             const veiculos = await response.json();
 
-            listaVeiculos.innerHTML = ''; // Limpa a mensagem de carregamento
+            listaVeiculos.innerHTML = '';
             if (response.ok && veiculos.length > 0) {
                 veiculos.forEach(veiculo => adicionarVeiculoNaLista(veiculo));
             } else if (response.ok) {
                 listaVeiculos.innerHTML = '<p>Nenhum veículo encontrado.</p>';
             } else {
-                exibirMensagem(veiculoMensagemDiv, veiculos.message || 'Erro ao carregar veículos.', 'red');
-                listaVeiculos.innerHTML = '<p>Erro ao carregar veículos.</p>';
+                throw new Error(veiculos.message || 'Erro ao carregar veículos.');
             }
         } catch (error) {
             console.error('Erro ao carregar veículos:', error);
-            exibirMensagem(veiculoMensagemDiv, 'Erro de conexão ao carregar veículos.', 'red');
-            listaVeiculos.innerHTML = '<p>Erro de conexão ao carregar veículos.</p>';
+            listaVeiculos.innerHTML = `<p style="color: var(--accent-color);">${error.message}</p>`;
         }
     }
 
     function adicionarVeiculoNaLista(veiculo) {
-        const li = document.createElement('li');
-        li.className = 'veiculo-item';
-        li.dataset.id = veiculo.ID_Veiculo || veiculo.id; // Supondo ID_Veiculo do backend
+        const itemWrapper = document.createElement('div');
+        itemWrapper.className = 'vehicle-list-item-wrapper';
 
-        li.innerHTML = `
-            <p><strong>Modelo:</strong> ${veiculo.modelo}</p>
-            <p><strong>Placa:</strong> ${veiculo.placa}</p>
-            <p><strong>Ano:</strong> ${veiculo.ano}</p>
-            <p><strong>Cor:</strong> ${veiculo.cor || 'N/A'}</p>
-            <button class="delete-btn" data-id="${veiculo.ID_Veiculo || veiculo.id}">Excluir</button>
+        const itemLink = document.createElement('a');
+        itemLink.href = `/veiculo.html?id=${veiculo._id}`;
+        itemLink.className = 'vehicle-list-item';
+        itemLink.innerHTML = `
+            <h4>${veiculo.modelo}</h4>
+            <p>${veiculo.placa}</p>
         `;
-        listaVeiculos.appendChild(li);
 
-        li.querySelector('.delete-btn').addEventListener('click', async (e) => {
-            const idParaExcluir = e.target.dataset.id;
-            await excluirVeiculo(idParaExcluir);
-            // Após excluir no backend, recarrega a lista para refletir a mudança
-            listaVeiculos.innerHTML = '';
-            carregarVeiculos();
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'btn delete-btn-list';
+        deleteBtn.textContent = 'Excluir';
+        deleteBtn.dataset.id = veiculo._id;
+
+        deleteBtn.addEventListener('click', async (e) => {
+            e.preventDefault(); // Prevent navigation
+            e.stopPropagation(); // Stop event from bubbling to the link
+            const id = e.target.dataset.id;
+            await excluirVeiculo(id);
         });
+
+        itemWrapper.appendChild(itemLink);
+        itemWrapper.appendChild(deleteBtn);
+        listaVeiculos.appendChild(itemWrapper);
     }
 
     async function excluirVeiculo(id) {
+        if (!confirm('Tem certeza que deseja excluir este veículo?')) return;
         try {
-            const response = await fetch(`http://localhost:3001/api/veiculos/${id}`, {
+            const response = await fetch(`/api/veiculos/${id}`, {
                 method: 'DELETE',
                 headers: getAuthHeader()
             });
-
             const data = await response.json();
-            if (response.ok) {
-                exibirMensagem(veiculoMensagemDiv, data.message || 'Veículo excluído com sucesso!', 'green');
-            } else {
-                exibirMensagem(veiculoMensagemDiv, data.message || 'Erro ao excluir veículo.', 'red');
+            if (!response.ok) {
+                throw new Error(data.message || 'Erro ao excluir veículo.');
             }
+            showToast('Veículo excluído com sucesso!', 'success');
+            carregarVeiculos();
         } catch (error) {
             console.error('Erro ao excluir veículo:', error);
-            exibirMensagem(veiculoMensagemDiv, 'Erro de conexão ao excluir veículo.', 'red');
-        }
-    }
-
-    // Função auxiliar para exibir mensagens temporárias
-    function exibirMensagem(elemento, texto, cor) {
-        if (elemento) {
-            elemento.textContent = texto;
-            elemento.style.color = cor;
-            setTimeout(() => {
-                elemento.textContent = '';
-            }, 3000); // Mensagem desaparece após 3 segundos
+            showToast(error.message, 'error');
         }
     }
 });
