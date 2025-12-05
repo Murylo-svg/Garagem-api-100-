@@ -1,4 +1,4 @@
-// public/js/garagem-publica.js
+// public/JS/garagem-publica.js
 document.addEventListener('DOMContentLoaded', () => {
     const publicVehicleList = document.getElementById('public-vehicle-list');
 

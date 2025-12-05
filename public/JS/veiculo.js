@@ -1,4 +1,4 @@
-// public/js/veiculo.js
+// public/JS/veiculo.js
 document.addEventListener('DOMContentLoaded', () => {
     const vehicleDetailsContainer = document.getElementById('vehicle-details-container');
     const urlParams = new URLSearchParams(window.location.search);

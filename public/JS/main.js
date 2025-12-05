@@ -1,4 +1,4 @@
-// public/js/main.js
+// public/JS/main.js
 document.addEventListener('DOMContentLoaded', () => {
 
     function getAuthHeader() {

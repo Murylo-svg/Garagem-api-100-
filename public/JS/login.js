@@ -1,4 +1,4 @@
-// public/js/login.js
+// public/JS/login.js
 document.addEventListener('DOMContentLoaded', function() {
     const formLogin = document.getElementById('formLogin');
     const emailInput = document.getElementById('email');

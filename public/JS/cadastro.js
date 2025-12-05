@@ -1,4 +1,4 @@
-// public/js/cadastro.js
+// public/JS/cadastro.js
 document.addEventListener('DOMContentLoaded', function() {
     const formCadastro = document.getElementById('formCadastro');
     const nomeInput = document.getElementById('nome');

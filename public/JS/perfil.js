@@ -1,4 +1,4 @@
-// public/js/perfil.js
+// public/JS/perfil.js
 document.addEventListener('DOMContentLoaded', () => {
     const profileForm = document.getElementById('profile-form');
     const emailInput = document.getElementById('profile-email');
