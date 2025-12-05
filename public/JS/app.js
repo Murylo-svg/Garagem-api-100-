@@ -1,4 +1,4 @@
-
+// public/js/app.js
 document.addEventListener('DOMContentLoaded', () => {
     const headerPlaceholder = document.getElementById('header-placeholder');
     const token = localStorage.getItem('userToken');
